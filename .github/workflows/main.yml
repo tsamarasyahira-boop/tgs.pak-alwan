@@ -1,0 +1,60 @@
+
+from pathlib import Path
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+
+def convert_cpp_file(cpp_path, output_dir):
+    kode = cpp_path.read_text(
+        encoding="utf-8",
+        errors="replace"
+    ).splitlines()
+
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Kode C++"
+
+    sheet.append(["No. Baris", "Kode C++"])
+
+    for nomor, baris in enumerate(kode, start=1):
+        sheet.append([nomor, baris])
+
+    for cell in sheet[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill(
+            "solid", fgColor="1F4E78"
+        )
+        cell.alignment = Alignment(
+            horizontal="center"
+        )
+
+    sheet.column_dimensions["A"].width = 12
+    sheet.column_dimensions["B"].width = 100
+    sheet.freeze_panes = "A2"
+
+    output_dir.mkdir(parents=True, exist_ok=True)
+    output_file = output_dir / f"{cpp_path.stem}.xlsx"
+    workbook.save(output_file)
+
+    print(f"Berhasil membuat: {output_file}")
+
+
+def main():
+    folder = Path(".")
+    output_dir = folder / "hasil_excel"
+
+    files = [
+        file for file in folder.rglob("*.cpp")
+        if ".git" not in file.parts
+        and "hasil_excel" not in file.parts
+    ]
+
+    if not files:
+        print("File CPP tidak ditemukan.")
+        return
+
+    for file in files:
+        convert_cpp_file(file, output_dir)
+
+
+if __name__ == "__main__":
+    main()
